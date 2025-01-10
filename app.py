@@ -1,6 +1,6 @@
 import streamlit as st
 import folium
-from streamlit_folium import folium_static
+# from streamlit_folium import folium_static
 import pandas as pd
 from utils import geocode_address, calculate_distances, filter_facilities
 
@@ -41,7 +41,7 @@ with col4:
 
 # Search button
 if st.button("Search"):
-    if street and city and province and postal_code:
+    if street and city and province:
         # Geocode user address
         user_location = geocode_address(street, city, province, postal_code)
         
@@ -83,7 +83,7 @@ if st.button("Search"):
                     opacity=0.2
                 ).add_to(m)
                 
-                folium_static(m)
+                # folium_static(m)
             
             with results_col:
                 st.write(f"Found {len(filtered_df)} facilities within {radius}km")
