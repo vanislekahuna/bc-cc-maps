@@ -2,8 +2,6 @@ import googlemaps
 import pandas as pd
 from geopy.distance import geodesic
 
-geocoder_key = "AIzaSyCyrwcPwLZ_6EPKQpWzGKTegxwM1E3o2a0"
-
 def geocode_address(street, city, province, postal_code):
     """Geocode an address using Google Maps"""
     gmaps = googlemaps.Client(key=geocoder_key)
