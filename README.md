@@ -19,5 +19,5 @@ This is a mini project protype to see how feasible it would be to build a map us
 
 2. With all the dependencies set up, now run the following script in your terminal:
 ```
-python app.py
+streamlit run src/app.py
 ```

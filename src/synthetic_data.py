@@ -46,7 +46,7 @@ providers_df = pd.concat([df, joint_df], axis=1)
 providers_df['total_spaces'] = providers_df[service_options].sum(axis=1)
 
 # Save to CSV
-providers_df.to_csv('data/synth_data.csv', index=False)
+providers_df.to_csv('../data/synth_data.csv', index=False)
 
 # Display first few rows
 print(f"Data successfully generated! \n \n {providers_df.head()}")

@@ -1,8 +1,8 @@
 import streamlit as st
 import folium
-# from streamlit_folium import folium_static
 import pandas as pd
-from utils import geocode_address, calculate_distances, filter_facilities
+from streamlit_folium import folium_static
+from utils import geocode_address, process_geodf, calculate_distances
 
 # Load data
 df = pd.read_csv('data/synth_data.csv')
@@ -43,28 +43,33 @@ with col4:
 if st.button("Search"):
     if street and city and province:
         # Geocode user address
-        user_location = geocode_address(street, city, province, postal_code)
+        user_lat, user_lon = geocode_address(street, city, province, postal_code)
         
-        if user_location:
-            user_lat, user_lon = user_location
-            
+        try:            
+            # Process the input DataFrame
+            processed_df = process_geodf(df, "latitude", "longitude")
+
             # Calculate distances and filter facilities
-            df_with_distances = calculate_distances(user_lat, user_lon, df)
-            filtered_df = filter_facilities(df_with_distances, radius, services)
+            df_with_distances = calculate_distances(user_lat, user_lon, processed_df)
+            filtered_df = df_with_distances[df_with_distances["distance_km"] <= radius]
+
+            ### Script Check ###
+            print(f"Found at least one site nearby the user: \n")
+            print(filtered_df.head(1)[["facility_name", "address", "city", "distance_km", "U36", "30SA", "Family", "Preschool", "total_spaces"]])
             
             # Create two columns for map and results
             map_col, results_col = st.columns([2, 1])
             
             with map_col:
                 # Create map centered on user location
-                m = folium.Map(location=[user_lat, user_lon], zoom_start=12)
+                childcare_map = folium.Map(location=[user_lat, user_lon], zoom_start=12)
                 
                 # Add user marker
                 folium.Marker(
                     [user_lat, user_lon],
                     popup="Your Location",
                     icon=folium.Icon(color='red')
-                ).add_to(m)
+                ).add_to(childcare_map)
                 
                 # Add facility markers
                 for _, row in filtered_df.iterrows():
@@ -72,7 +77,7 @@ if st.button("Search"):
                         [row['latitude'], row['longitude']],
                         popup=row['facility_name'],
                         icon=folium.Icon(color='blue')
-                    ).add_to(m)
+                    ).add_to(childcare_map)
                 
                 # Add radius circle
                 folium.Circle(
@@ -81,9 +86,9 @@ if st.button("Search"):
                     color='red',
                     fill=True,
                     opacity=0.2
-                ).add_to(m)
+                ).add_to(childcare_map)
                 
-                # folium_static(m)
+                folium_static(childcare_map)
             
             with results_col:
                 st.write(f"Found {len(filtered_df)} facilities within {radius}km")
@@ -95,7 +100,7 @@ if st.button("Search"):
                 )
                 
                 if sort_by == "Distance":
-                    filtered_df = filtered_df.sort_values('distance')
+                    filtered_df = filtered_df.sort_values('distance_km')
                 else:
                     filtered_df = filtered_df.sort_values('total_spaces', ascending=False)
                 
@@ -111,12 +116,11 @@ if st.button("Search"):
                     for _, row in filtered_df.iloc[start_idx:end_idx].iterrows():
                         st.write("---")
                         st.write(f"**{row['facility_name']}**")
-                        st.write(f"Distance: {row['distance']:.1f} km")
-                        st.write(f"Address: {row['address']}")
-                        st.write(f"Services: {', '.join(eval(row['services']))}")
+                        st.write(f"Distance: {row['distance_km']:.1f} km")
+                        st.write(f"Address: {row['address']}, {row['city']}, BC {row['postal_code']}")
                         st.write(f"Total Spaces: {row['total_spaces']}")
                 
-        else:
-            st.error("Unable to locate the provided address. Please check and try again.")
+        except Exception as e:
+            st.error(f"Unable to locate the provided address {street}, {city}, {province}. Error in {e}")
     else:
         st.error("Please fill in all address fields.")
