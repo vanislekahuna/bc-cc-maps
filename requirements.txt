@@ -3,3 +3,4 @@ folium==0.19.2
 geopy==2.4.1
 googlemaps==4.10.0
 streamlit-folium
+python-dotenv

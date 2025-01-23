@@ -1,10 +1,17 @@
+import os
 import googlemaps
 import pandas as pd
 from geopy.distance import geodesic
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+GEOCODER_KEY = os.environ["geocoder_key"]
 
 def geocode_address(street, city, province, postal_code):
     """Geocode an address using Google Maps"""
-    gmaps = googlemaps.Client(key=geocoder_key)
+    gmaps = googlemaps.Client(key=GEOCODER_KEY)
     address = f"{street}, {city}, {province} {postal_code}"
 
     print(f"Geocoding the address at {address}....")
