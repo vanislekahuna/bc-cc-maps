@@ -1,0 +1,7 @@
+name: Run Python script
+
+on:
+  workflow_dispatch:
+
+env:
+  geocoder_key: ${{ secrets.GEOCODER_KEY }}
